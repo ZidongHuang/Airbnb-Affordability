@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Transition_PSET</title>
+    <script src="https://d3js.org/d3.v5.min.js" charset="utf-8"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="https://d3js.org/topojson.v2.min.js"></script>
+
+    <style>
+        #tooltip {
+            font-family: "Proxima Nova", "Montserrat", sans-serif;
+            font-size: 12px;
+            text-align: center;
+            position: absolute;
+            width: 80px;
+            height: 30px;
+            padding: 5px;
+            opacity: .6;
+            background-color: white;
+            border: solid gray 1px;
+            z-index: 10;
+        }
+
+            #tooltip.hidden {
+                display: none;
+            }
+    </style>
+</head>
+<body>
+    <div id="main"></div>
+    <button id="11">Roslindale</button>
+    <button id="22">South Boston Waterfront</button>
+    <button id="1">Back Bay</button>
+    <button id="12">Jamaica Plain</button>
+    <div id="tooltip" class="hidden"><p id="value">100</p></div>
+
+
+    <script>
+        var height = 800
+        var width = 1600
+        var dataurl = "https://gist.githubusercontent.com/cesandoval/046a91586ae76889aeb5b3e9db53016e/raw/ffb0c410ce8503c8c839cde01235bafb39cb14ad/bostosn_311.csv"
+
+        var data = d3.csv(dataurl).then(function (d) {
+            for (i = 0; i < d.length; i++) {
+                if (d[i].Name == "Roslindale") {
+                    //console.log([d[i].Citizens_Connect_App, d[i].City_Worker_App, d[i].Constituent_Call, d[i].Employee_Generated, d[i].twitter,])
+                    //data = [d[i].Citizens_Connect_App, d[i].City_Worker_App, d[i].Constituent_Call, d[i].Employee_Generated, d[i].twitter, ]
+                }
+            }
+        })
+        var svg = d3.select("#main").append("svg").attr("height", height).attr("width", width)
+
+        //---------------------------------map--------------------------------------------
+        var bosMap = 'https://gist.githubusercontent.com/jdev42092/5c285c4a3608eb9f9864f5da27db4e49/raw/a1c33b1432ca2948f14f656cc14c7c7335f78d95/boston_neighborhoods.json'
+        bosMap = "https://gist.githubusercontent.com/cesandoval/09b2e39263c748fbcb84b927cecc7c46/raw/ab71d3638efd2545ec99c2651c6f2ddcea9d2a07/boston.json"
+
+        var albersProjection = d3.geoAlbers()
+            .scale(150000)
+            .rotate([71.057, 0])
+            .center([0, 42.313])
+            .translate([width * 2 / 3, height / 2])
+
+        var geopath = d3.geoPath()
+            .projection(albersProjection)
+
+        d3.json(bosMap).then(function (d) {
+            console.log(d)
+            svg.append("g").selectAll("path").data(topojson.feature(d, d.objects.boston_neigh).features).enter().append("path")
+                .attr("fill", function (d) {
+                    if (d.properties.Name == "Roslindale") { return "#3caea3" }
+                    return "#ccc"
+                })
+                .attr("stroke", "gray")
+                .attr("stroke-width", 0.5)
+                .attr("d", geopath)
+        })
+
+        d3.csv(dataurl).then(function (d) {
+            data = [d[11].Citizens_Connect_App, d[11].City_Worker_App, d[11].Constituent_Call, d[11].Employee_Generated, d[11].twitter, d[11].Self_Service]
+            //console.log(data)
+            svg.selectAll("rect").data(data).enter().append("rect")
+                .attr("x", function (d, i) { console.log(i); return 100 + i * 80 })
+                .attr("y", d => height - d / 10 - 200)
+                .attr("height", d => d / 10)
+                .attr("width", 30)
+                .attr("fill", "#3caea3")
+                .on("mouseover", function (d) {
+                    d3.select("#tooltip")
+                        .classed("hidden", false)
+                        .style("left", d3.event.pageX + "px")
+                        .style("top", d3.event.pageY + "px")
+                        .style("color", "red")
+                        .select("#value").html(d)
+
+                })
+                .on("mouseout", function () { d3.select("#tooltip").classed("hidden", true) })
+
+            svg.append("line")
+                .attr("x1", 50)
+                .attr("y1", height - 200)
+                .attr("x2", 600)
+                .attr("y2", height - 200)
+                .attr("stroke-width", 2)
+                .attr("stroke", "black");
+
+            svg.append("line")
+                .attr("x1", 50)
+                .attr("y1", height - 200)
+                .attr("x2", 50)
+                .attr("y2", 200)
+                .attr("stroke-width", 2)
+                .attr("stroke", "black");
+
+            tag = ["Citizens_Connect_App", "City_Worker_App", "Constituent_Call", "Employee_Generated", "twitter", "Self_Service"]
+            svg.selectAll("text").data(tag).enter().append("text")
+                .attr("class", "y label")
+                .attr("transform", function (d, i) { return "translate(" + (115 + i * 80) + ", 620) rotate(-90)"})
+                .attr("text-anchor", "end")
+                .text(d => d)
+        })
+
+        d3.selectAll("button").on("click", change)
+
+        function change() {
+            id = this.id;
+            //console.log(id)
+            text = this.textContent
+
+            d3.csv(dataurl).then(function (d) {
+                data = [d[id].Citizens_Connect_App, d[id].City_Worker_App, d[id].Constituent_Call, d[id].Employee_Generated, d[id].twitter, d[id].Self_Service]
+                d3.selectAll("rect").data(data).transition()
+                    .attr("y", d => height - d / 10 - 200)
+                    .attr("height", function (d) { return d / 10; })
+                    .duration(2500)
+                    .ease(d3.easeBounce)
+
+                d3.json(bosMap).then(function (d) {
+                    d3.selectAll("path").data(topojson.feature(d, d.objects.boston_neigh).features).transition()
+                        .attr("fill", function (d) {
+                            //console.log(d.properties.Name)
+                            if (d.properties.Name == text) { return "#3caea3"}
+                            return "#ccc"
+                        })
+                        .duration(2500)
+                })
+            })
+        }
+
+
+
+    </script>
+</body>
+</html>
