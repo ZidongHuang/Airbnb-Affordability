@@ -1,8 +1,6 @@
 // chart 3
-
 var inputValue = null;
 var years = [2015, 2016,2017, 2018]
-
 
  // append the svg object to the body of the page
     // set the dimensions and margins of the graph
@@ -20,7 +18,6 @@ var Svg = d3.select("div#chart3")
         .append("g")
             .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
-
 
 d3.csv("data/vacancy_and_365.csv").then(function(data){
 

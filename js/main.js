@@ -1,26 +1,186 @@
 // JavaScript source code
 
-// mapboxgl.accessToken = 'pk.eyJ1IjoiemRodWFuZyIsImEiOiJjazlwYXFlYjEwNXF5M2ltb3htaDQ2NGFiIn0.E7gXx-d4rRAyPOQ-yQlWaQ';
-// var map = new mapboxgl.Map({
-//     container: 'map',
-//     style: 'mapbox://styles/zdhuang/ck9p9aa500sep1ip7rigtbb12',
-//     center: [-73.987, 40.747],
-//     zoom: 11
-// });
+//------------------------------------This is the chart1-line-chart script (3 - ~100)------------------------------
+var dataset = [[2008, 35], [2009, 458], [2010, 1558], [2011, 4513], [2012, 9868], [2013, 16337], [2014, 24814], [2015, 33779], [2016, 41145], [2017, 46456], [2018, 50960]]
+var width = 650;
+var height = 400;
+var padding = { top: 80, right: 80, bottom: 80, left: 80 };
+
+var xScale = d3.scaleLinear()
+    .domain([new Date(2008), new Date(2018)])
+    .range([0, width - padding.left - padding.right]);
+var yScale = d3.scaleLinear()
+    .domain([0, 55000])
+    .range([height - padding.top - padding.bottom, 0]);
+
+var svg = d3.select("div#chart1")
+    .append('svg')
+    .attr('width', width + 'px')
+    .attr('height', height + 'px');
+
+var xAxis = d3.axisBottom()
+    .scale(xScale)
+    .tickFormat(d3.format("d"))
+
+var yAxis = d3.axisLeft()
+    .scale(yScale);
+
+svg.append('g')
+    .attr('class', 'axis')
+    .attr('transform', 'translate(' + padding.left + ',' + (height - padding.bottom) + ')')
+    .call(xAxis);
+svg.append('g')
+    .attr('class', 'axis')
+    .attr('transform', 'translate(' + padding.left + ',' + padding.top + ')')
+    .call(yAxis);
+
+svg.append("text")
+    .attr("class", "titlestyling")
+    .text("Airbnb Growth in NYC 2008-2018")
+    .attr("text-anchor", "middle")
+    .attr("x", "320")
+    .attr("y", "50")
+    .attr("fill", "#e43f5a")
+    .attr("font", "Arial")
+    .attr("font-size", 15);
+
+svg.append("text")
+    .text("Listing Count")
+    .attr("text-anchor", "end")
+    .attr("transform", "rotate(-90)")
+    .attr("x", "-140")
+    .attr("y", "20")
+    .attr("fill", "#e43f5a")
+    .attr("font", "Arial")
+    .attr("font-size", 14);
+
+var linePath = d3.line()
+    .x(function (d) { return xScale(d[0]) })
+    .y(function (d) { return yScale(d[1]) });
+
+svg.append('g')
+    .append('path')
+    .attr('class', 'line-path')
+    .attr('transform', 'translate(' + padding.left + ',' + padding.top + ')')
+    .attr('d', linePath(dataset))
+    .attr('fill', 'none')
+    .attr('stroke-width', 2.5)
+    .attr('stroke', 'white')
+    .attr("opacity", .8)
+
+var chart1_tooltip = d3.select("body").append("div").attr("class", "tooltip")
+    .style("display", "none");
+
+svg.append('g')
+    .selectAll('circle')
+    .data(dataset)
+    .enter()
+    .append('circle')
+    .attr('r', 4)
+    .attr("class", "cir")
+    .attr('transform', function (d) {
+        return 'translate(' + (xScale(d[0]) + padding.left) + ',' + (yScale(d[1]) + padding.top) + ')'
+    })
+    .attr('fill', 'white')
+    .on("mouseover", function (d) {
+        d3.select(this).transition().attr("r", 8)
+        chart1_tooltip.style("display", "inline")
+            .style("left", (d3.event.pageX - 40) + "px")
+            .style("top", (d3.event.pageY - 40) + "px")
+            .html("Year: " + String(d[0]) + "<br>" + "Airbnb Listings: " + String(d[1]))
+    })
+    .on("mouseout", function () {
+        d3.select(this).transition().attr("r", 4)
+        chart1_tooltip.style("display", "none")
+    })
+//------------------------------------------------------chart2--------------------------------------------------------------------
+var svg = d3.select("div#matrix")
+    .append("svg").attr("transform", "translate(100,0)")
+    .attr("width", 600)
+    .attr("height", 800);
+
+var dot1 = [];
+for (var i = 0; i < 20; i++) {
+    var newNumber = i + 1;
+    dot1.push(newNumber);
+}
+
+for (var row = 0; row < 8; row++) {
+    for (var j = 0; j < 20; j++) {
+        svg.append("circle")
+        .attr("cx", function (d, i) {
+            return (j * 20 + 30);
+        })
+        .attr("cy", function (d, i) {
+            return (row * 20 + 80);
+        })
+        .attr("r", 7)
+        .attr("class", "matrix_circle1")
+    }
+}
+
+for (var j = 0; j < 7; j++) {
+    svg.append("circle")
+    .attr("cx", function (d, i) {
+        return (j * 20 + 30);
+    })
+    .attr("cy", 240)
+    .attr("r", 7)
+    .attr("class", "matrix_circle1")
+}
+
+for (var j = 7; j < 20; j++) {
+    svg.append("circle")
+    .attr("cx", function (d, i) {
+        return (j * 20 + 30);
+    })
+    .attr("cy", 240)
+    .attr("r", 7)
+    .attr("class", "matrix_circle2")
+}
+
+for (var row = 9; row < 20; row++) {
+    for (var j = 0; j < 20; j++) {
+        svg.append("circle")
+        .attr("cx", function (d, i) {
+            return (j * 20 + 30);
+        })
+        .attr("cy", function (d, i) {
+            return (row * 20 + 80);
+        })
+        .attr("r", 7)
+        .attr("class", "matrix_circle2")
+    }
+}
+
+var controller = new ScrollMagic.Controller();
+
+new ScrollMagic.Scene({ triggerElement: "#matrix_text_1" })
+    .setClassToggle(".matrix_circle1", "active1")
+    .addTo(controller);
+
+new ScrollMagic.Scene({ triggerElement: "#matrix_text_1" })
+    .setClassToggle(".matrix_circle2", "active1")
+    .addTo(controller);
+
+new ScrollMagic.Scene({ triggerElement: "#matrix_text_2" })
+    .setClassToggle(".matrix_circle1", "active2")
+    .addTo(controller);
 
 
+//--------------------------------------------------------------------d3 map-------------------------------------------------------
 // var setHeight = document.getElementById("set-height");
 var vid = document.getElementById("pic");
 
 var width = 700;
-var height = 700;
+var h = 700;
 
 var NYmapurl = 'https://raw.githubusercontent.com/payneli477/d3-NY-map-test/master/data/2010%20Census%20Tracts.geojson'
 
 var svg = d3.select("div.main")
     .append("svg")
     .attr("width", width)
-    .attr("height", height)
+    .attr("height", h)
     .attr("fill", "black")
     .attr("transform", "translate(0,0)")
     .classed("map", true)
@@ -28,7 +188,7 @@ var svg = d3.select("div.main")
 var svg2 = d3.select("div#map_afford")
     .append("svg")
     .attr("width", width)
-    .attr("height", height)
+    .attr("height", h)
     .attr("fill", "black")
     .attr("transform", "translate(0,0)")
     .classed("map", true)
@@ -40,7 +200,7 @@ var albersProjection = d3.geoAlbers()
     .scale(250000)
     .rotate([73.987, 0])
     .center([0, 40.747])
-    .translate([width / 2, height / 2])
+    .translate([width / 2, h / 2])
 
 var path = d3.geoPath()
     .projection(albersProjection)
@@ -130,7 +290,7 @@ function ready(d) {
     var div_l1 = div.append("p").style("line-height", "5px");
     var div_l2 = div.append("p").style("line-height", "5px");
 
-    svg2.append("g").attr("transform", "translate(600,0)").selectAll("path")
+    svg2.append("g").attr("transform", "translate(600,0)").style("z-index", "1").selectAll("path")
         .data(d.features)
         .enter()
         .append("path")
